@@ -23,6 +23,7 @@ $ tasks new 'Another task' 60
 To view all existing tasks, use the list subcommand (tasks are sorted by priority):
 ```console
 $ tasks list
+tasks: [INFO]: 2 tasks total
 OPENED task 20260224-101252: PRIORITY[60] Another task
 OPENED task 20260224-101253: PRIORITY[100] Some task
 ```
@@ -30,9 +31,11 @@ To close a task, use the close subcommand
 It requires a task hash, you can view it through the tasks list
 ```console
 $ tasks list
+tasks: [INFO]: 1 tasks total
 OPENED task 20260224-101252: PRIORITY[60] Another task
 $ tasks close 20260224-101252
 $ tasks list
+tasks: [INFO]: 1 tasks total
 CLOSED task 20260224-101252: PRIORITY[60] Another task
 ```
 To reopen a closed task, use the open subcommand:
@@ -50,6 +53,7 @@ $ tasks priority 20260224-101252 25
 To remove a task, use the remove subcommand
 ```console
 $ tasks list
+tasks: [INFO]: 1 tasks total
 CLOSED task 20260224-101252: PRIORITY[60] Another task
 $ tasks remove 20260224-101252
 $ tasks list
