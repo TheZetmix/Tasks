@@ -12,6 +12,29 @@ SubCommand :: struct {
     handler: proc()
 }
 
+update_line_by_hash :: proc(hash, content: string, line: int) {
+    data, success := os.read_entire_file(fmt.tprintf("todo/%s", hash))
+    if success != true do error("invalid hash")
+    error_check_and_exit()
+    
+    lines, _ := strings.split_lines(cast(string)data)
+    
+    lines[line] = content
+    
+    new_data := strings.join(lines, "\n"); defer delete(new_data)
+    os.write_entire_file(fmt.tprintf("todo/%s", hash), transmute([]byte)new_data)
+}
+
+get_line_content :: proc(hash: string, line: int) -> string {
+    data, success := os.read_entire_file(fmt.tprintf("todo/%s", hash))
+    if success != true do error("invalid hash")
+    error_check_and_exit()
+    
+    lines, _ := strings.split_lines(cast(string)data)
+    
+    return lines[line]
+}
+
 subcommands :: []SubCommand{
     {
         "new",
@@ -45,6 +68,8 @@ subcommands :: []SubCommand{
             entries, _ := os.open("./todo", os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
             
+            info("%d tasks total", len(files))
+            
             slice.sort_by(files[:], proc(a, b: os.File_Info) -> bool {
                 data_a, _ := os.read_entire_file(a.fullpath); defer delete(data_a)
                 data_b, _ := os.read_entire_file(b.fullpath); defer delete(data_b)
@@ -66,8 +91,9 @@ subcommands :: []SubCommand{
                 state := lines[1]
                 priority := lines[2]
                 
-                fmt.printf("\033[%dm%s\033[0m task %s: \033[31mPRIORITY\033[0m[%s] %s\n", 31 if state == "OPENED" else 32, state, i.name, priority, title)
+                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%s] %s\n", 31 if state == "OPENED" else 32, state, i.name, priority, title)
             }
+            if len(files) == 0 do fmt.println("There is nothing to do :(")
         }
     },
     {
@@ -78,16 +104,22 @@ subcommands :: []SubCommand{
             
             hash := os.args[2]
             
-            data, success := os.read_entire_file(fmt.tprintf("todo/%s", hash))
-            if success != true do error("invalid hash")
+            update_line_by_hash(hash, "CLOSED", 1)
+            
+            info("'%s' was closed", get_line_content(hash, 0))
+        }
+    },
+    {
+        "open",
+        proc() {
+            if len(os.args) == 2 do error("task hash not provided")
             error_check_and_exit()
             
-            lines, _ := strings.split_lines(cast(string)data)
+            hash := os.args[2]
             
-            lines[1] = "CLOSED"
+            update_line_by_hash(hash, "OPENED", 1)
             
-            new_data := strings.join(lines, "\n"); defer delete(new_data)
-            os.write_entire_file(fmt.tprintf("todo/%s", hash), transmute([]byte)new_data)
+            info("'%s' was opened", get_line_content(hash, 0))
         }
     },
     {
@@ -101,6 +133,41 @@ subcommands :: []SubCommand{
             err := os.remove(fmt.tprintf("todo/%s", hash))
             
             if err != nil do error("invalid hash")
+            info("'%s' was removed", get_line_content(hash, 0))
+        }
+    },
+    {
+        "rename",
+        proc() {
+            if len(os.args) == 2 do error("task hash not provided")
+            error_check_and_exit()
+            
+            hash := os.args[2]
+            
+            if len(os.args) == 3 do error("new task title not provided")
+            error_check_and_exit()
+            
+            title := os.args[3]
+            
+            update_line_by_hash(hash, title, 0)
+            info("'%s' was renamed", get_line_content(hash, 0))
+        }
+    },
+    {
+        "priority",
+        proc() {
+            if len(os.args) == 2 do error("task hash not provided")
+            error_check_and_exit()
+            
+            hash := os.args[2]
+            
+            if len(os.args) == 3 do error("new priority not provided")
+            error_check_and_exit()
+            
+            priority := os.args[3]
+            
+            update_line_by_hash(hash, priority, 2)
+            info("priority of '%s' was changed", get_line_content(hash, 0))
         }
     }
 }
