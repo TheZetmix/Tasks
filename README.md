@@ -66,6 +66,7 @@ STATE (OPENED/CLOSED)
 Priority number
 ```
 Subcommands summary:
+```text
 new <title> [priority] - create a new task (default priority: 100)
 list - show all tasks sorted by priority
 close <hash> - mark task as closed
@@ -73,3 +74,4 @@ open <hash> - reopen a closed task
 rename <hash> <new-title> - change task title
 priority <hash> <new-priority> - change task priority
 remove <hash> - permanently delete task
+```
