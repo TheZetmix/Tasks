@@ -11,7 +11,7 @@ After this, you can compile and install the utility:
 $ make build
 $ sudo make install
 ```
-Usage:
+### Usage:
 To create a new task, use the new subcommand
 ```console
 $ tasks new 'Some task'
