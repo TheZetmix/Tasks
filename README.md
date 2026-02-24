@@ -24,38 +24,38 @@ To view all existing tasks, use the list subcommand (tasks are sorted by priorit
 ```console
 $ tasks list
 tasks: [INFO]: 2 tasks total
-OPENED task 20260224-101252: PRIORITY[60] Another task
-OPENED task 20260224-101253: PRIORITY[100] Some task
+OPENED task At: PRIORITY[60] Another task
+OPENED task St: PRIORITY[100] Some task
 ```
 To close a task, use the close subcommand  
 It requires a task hash, you can view it through the tasks list  
 ```console
 $ tasks list
 tasks: [INFO]: 1 tasks total
-OPENED task 20260224-101252: PRIORITY[60] Another task
-$ tasks close 20260224-101252
+OPENED task At: PRIORITY[60] Another task
+$ tasks close At
 $ tasks list
 tasks: [INFO]: 1 tasks total
-CLOSED task 20260224-101252: PRIORITY[60] Another task
+CLOSED task At: PRIORITY[60] Another task
 ```
 To reopen a closed task, use the open subcommand:  
 ```console
-$ tasks open 20260224-101252
+$ tasks open At
 ```
 To rename a task, use the rename subcommand:  
 ```console
-$ tasks rename 20260224-101252 'Updated task name'
+$ tasks rename Utn 'Updated task name'
 ```
 To change task priority, use the priority subcommand:  
 ```console
-$ tasks priority 20260224-101252 25
+$ tasks priority Utn 25
 ```
 To remove a task, use the remove subcommand  
 ```console
 $ tasks list
 tasks: [INFO]: 1 tasks total
-CLOSED task 20260224-101252: PRIORITY[60] Another task
-$ tasks remove 20260224-101252
+CLOSED task At: PRIORITY[60] Another task
+$ tasks remove At
 $ tasks list
 tasks: [INFO]: 0 tasks total
 There is nothing to do :(
@@ -78,3 +78,8 @@ rename <hash> <new-title> - change task title
 priority <hash> <new-priority> - change task priority
 remove <hash> - permanently delete task
 ```
+
+Hashes are generated based on the first letters of the task name, for example:  
+Some task - St  
+Refactor args parsing - Rap  
+Another task with many many words and bla bla bla - Atwmmwabbb  
