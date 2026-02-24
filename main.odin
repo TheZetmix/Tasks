@@ -9,6 +9,7 @@ import "core:slice"
 
 SubCommand :: struct {
     name: string,
+    help: string,
     handler: proc()
 }
 
@@ -38,6 +39,7 @@ get_line_content :: proc(hash: string, line: int) -> string {
 subcommands :: []SubCommand{
     {
         "new",
+        "create a new task",
         proc() {
             if len(os.args) == 2 do error("task title not provided")
             error_check_and_exit()
@@ -64,6 +66,7 @@ subcommands :: []SubCommand{
     },
     {
         "list",
+        "list all tasks",
         proc() {
             entries, _ := os.open("./todo", os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
@@ -98,6 +101,7 @@ subcommands :: []SubCommand{
     },
     {
         "close",
+        "close task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
             error_check_and_exit()
@@ -111,6 +115,7 @@ subcommands :: []SubCommand{
     },
     {
         "open",
+        "open task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
             error_check_and_exit()
@@ -124,6 +129,7 @@ subcommands :: []SubCommand{
     },
     {
         "remove",
+        "delete task permanently",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
             error_check_and_exit()
@@ -138,6 +144,7 @@ subcommands :: []SubCommand{
     },
     {
         "rename",
+        "rename task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
             error_check_and_exit()
@@ -155,6 +162,7 @@ subcommands :: []SubCommand{
     },
     {
         "priority",
+        "change priority of the task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
             error_check_and_exit()
@@ -175,7 +183,7 @@ subcommands :: []SubCommand{
 print_subcommands :: proc() {
     fmt.println("available subcommands:")
     for i in subcommands {
-        fmt.println("  -", i.name)
+        fmt.println("  -", i.name, "\t", i.help)
     }
 }
 
