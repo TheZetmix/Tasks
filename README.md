@@ -4,7 +4,7 @@
 
 This utility allows you to create, delete or close tasks for projects directly in the project folder
 
-Quick start:
+### Quick start:
 Since the utility is written in the Odin programming language, you need to [download](https://odin-lang.org/docs/install/) a compiler for this language
 After this, you can compile and install the utility:
 ```console
