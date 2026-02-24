@@ -1,6 +1,6 @@
-### Tasks
+# Tasks
 
-# NOTE: The original idea was taken from [Tsoding](https://github.com/tsoding) from his series of videos about 3d software rendering game (https://www.youtube.com/@TsodingDaily)
+### NOTE: The original idea was taken from [Tsoding](https://github.com/tsoding) from his series of videos about 3d software rendering game (https://www.youtube.com/@TsodingDaily)
 
 This utility allows you to create, delete or close tasks for projects directly in the project folder
 
@@ -11,4 +11,3 @@ After this, you can compile and install the utility:
 sudo make build install
 ```
 
-# Tasks
