@@ -1,6 +1,5 @@
 
 build:
-	rm -rf todo
 	odin build . -out:tasks
 
 install:

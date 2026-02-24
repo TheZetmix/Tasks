@@ -51,15 +51,24 @@ subcommands :: []SubCommand{
                 priority, _ = strconv.parse_int(os.args[3])
             }
             
-            hour, minute, sec := time.clock_from_time(time.now())
-            data := fmt.tprintf("%s\nOPENED\n%d", title, priority)
-            filename := fmt.tprintf(
-                "todo/%04d%02d%02d-%02d%02d%02d",
-                time.year(time.now()), time.month(time.now()), time.day(time.now()),
-                hour, minute, sec
-            )
+            // generate hash (legacy version with date)
+            // hour, minute, sec := time.clock_from_time(time.now())
+            // filename := fmt.tprintf(
+            //     "todo/%04d%02d%02d-%02d%02d%02d",
+            //     time.year(time.now()), time.month(time.now()), time.day(time.now()),
+            //     hour, minute, sec
+            // )
             
-            info("'%s' was added", title)
+            data := fmt.tprintf("%s\nOPENED\n%d", title, priority)
+            
+            builder := strings.builder_make(); defer strings.builder_destroy(&builder)
+            for i in strings.split(title, " ") {
+                strings.write_byte(&builder, i[0])
+            }
+            
+            filename := fmt.tprintf("todo/%s", strings.to_string(builder))
+            
+            info("'%s' was added (hash: %s)", title, filename)
             
             os.write_entire_file(filename, transmute([]byte)data)
         }
@@ -138,7 +147,8 @@ subcommands :: []SubCommand{
             
             err := os.remove(fmt.tprintf("todo/%s", hash))
             
-            if err != nil do error("invalid hash")
+            if err == nil do error("invalid hash")
+            error_check_and_exit()
             info("'%s' was removed", get_line_content(hash, 0))
         }
     },
@@ -156,8 +166,8 @@ subcommands :: []SubCommand{
             
             title := os.args[3]
             
-            update_line_by_hash(hash, title, 0)
             info("'%s' was renamed", get_line_content(hash, 0))
+            update_line_by_hash(hash, title, 0)
         }
     },
     {
