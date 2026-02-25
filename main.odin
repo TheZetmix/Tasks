@@ -37,9 +37,9 @@ validate_format :: proc(lines: []string) {
 
 parse_task_by_hash :: proc(hash: string) -> (res: Task) {
     validate_hash(hash)
-    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash)); defer delete(data)
+    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash));
     
-    lines, _ := strings.split_lines(cast(string)data); defer delete(lines)
+    lines, _ := strings.split_lines(cast(string)data);
     validate_format(lines)
     
     res.title       = lines[0]
