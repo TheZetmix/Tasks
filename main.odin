@@ -16,7 +16,7 @@ SubCommand :: struct {
 todo_dir :: "todo/"
 
 update_line_by_hash :: proc(hash, content: string, line: int) {
-    data, success := os.read_entire_file(fmt.tprintf("&s/%s", todo_dir, hash))
+    data, success := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
     if success != true do error("invalid hash")
     
     lines, _ := strings.split_lines(cast(string)data)
@@ -24,7 +24,7 @@ update_line_by_hash :: proc(hash, content: string, line: int) {
     lines[line] = content
     
     new_data := strings.join(lines, "\n"); defer delete(new_data)
-    os.write_entire_file(fmt.tprintf("&s/%s", todo_dir, hash), transmute([]byte)new_data)
+    os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data)
 }
 
 get_line_content :: proc(hash: string, line: int) -> string {
@@ -102,7 +102,7 @@ subcommands :: []SubCommand{
                 state := lines[1]
                 priority := lines[2]
                 
-                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%s] %s\n", 31 if state == "OPENED" else 32, state, i.name, priority, title)
+                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%s]\t %s\n", 31 if state == "OPENED" else 32, state, i.name, priority, title)
             }
             if len(files) == 0 do fmt.println("There is nothing to do :(")
         }
