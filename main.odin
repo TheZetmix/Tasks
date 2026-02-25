@@ -37,9 +37,9 @@ validate_format :: proc(lines: []string) {
 
 parse_task_by_hash :: proc(hash: string) -> (res: Task) {
     validate_hash(hash)
-    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
+    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash)); defer delete(data)
     
-    lines, _ := strings.split_lines(cast(string)data)
+    lines, _ := strings.split_lines(cast(string)data); defer delete(lines)
     validate_format(lines)
     
     res.title       = lines[0]
@@ -52,9 +52,9 @@ parse_task_by_hash :: proc(hash: string) -> (res: Task) {
 
 modify_hash :: proc(hash: string, new_data: Task) {
     validate_hash(hash)
-    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
+    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash)); defer delete(data)
     
-    lines, _ := strings.split_lines(cast(string)data)
+    lines, _ := strings.split_lines(cast(string)data); defer delete(lines)
     validate_format(lines)
     
     lines[0] = new_data.title
@@ -62,9 +62,9 @@ modify_hash :: proc(hash: string, new_data: Task) {
     lines[2] = fmt.tprintf("%d", new_data.priority)
     lines[3] = new_data.date
     
-    new_data := strings.join(lines, "\n"); defer delete(new_data)
+    new_data_str := strings.join(lines, "\n"); defer delete(new_data_str)
     
-    os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data)
+    os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data_str)
 }
 
 subcommands :: []SubCommand{
@@ -106,7 +106,7 @@ subcommands :: []SubCommand{
         proc() {
             entries, _ := os.open(todo_dir, os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
-            hashes: [dynamic]string
+            hashes: [dynamic]string; defer delete(hashes)
             
             info("%d tasks total", len(files))
             
@@ -221,7 +221,7 @@ subcommands :: []SubCommand{
         "update",
         "update date of task creation",
         proc() {
-                if len(os.args) == 2 do error("task hash not provided")
+            if len(os.args) == 2 do error("task hash not provided")
             
             hash := os.args[2]
             
