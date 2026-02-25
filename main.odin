@@ -216,6 +216,23 @@ subcommands :: []SubCommand{
             modify_hash(hash, data)
             info("priority of %s was changed", data.title)
         }
+    },
+    {
+        "update",
+        "update date of the task",
+        proc() {
+                if len(os.args) == 2 do error("task hash not provided")
+            
+            hash := os.args[2]
+            
+            data := parse_task_by_hash(hash)
+            data.date = fmt.tprintf(
+                "%04d%02d%02d",
+                time.year(time.now()), time.month(time.now()), time.day(time.now()),
+            )
+            modify_hash(hash, data)
+            info("date of %s was updated", data.title)
+        }
     }
 }
 
