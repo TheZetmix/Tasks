@@ -13,27 +13,57 @@ SubCommand :: struct {
     handler: proc()
 }
 
+Task :: struct {
+    title: string,
+    state: TaskState,
+    priority: int,
+    date:  string
+}
+
+TaskState :: enum {
+    OPENED,
+    CLOSED
+}
+
 todo_dir :: "todo/"
 
-update_line_by_hash :: proc(hash, content: string, line: int) {
-    data, success := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
-    if success != true do error("invalid hash")
+validate_hash :: proc(hash: string) {
+    if !os.exists(fmt.tprintf("%s/%s", todo_dir, hash)) do error("invalid hash %s", hash)
+}
+
+validate_format :: proc(lines: []string) {
+    if len(lines) != 4 do error("invalid task file format")
+}
+
+parse_task_by_hash :: proc(hash: string) -> (res: Task) {
+    validate_hash(hash)
+    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
     
     lines, _ := strings.split_lines(cast(string)data)
+    validate_format(lines)
     
-    lines[line] = content
+    res.title       = lines[0]
+    res.state       = TaskState.OPENED if lines[1] == "OPENED" else TaskState.CLOSED
+    res.priority, _ = strconv.parse_int(lines[2])
+    res.date        = lines[3]
+    
+    return res
+}
+
+modify_hash :: proc(hash: string, new_data: Task) {
+    validate_hash(hash)
+    data, _ := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
+    
+    lines, _ := strings.split_lines(cast(string)data)
+    validate_format(lines)
+    
+    lines[0] = new_data.title
+    lines[1] = "OPENED" if new_data.state == .OPENED else "CLOSED"
+    lines[2] = fmt.tprintf("%d", new_data.priority)
+    lines[3] = new_data.date
     
     new_data := strings.join(lines, "\n"); defer delete(new_data)
     os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data)
-}
-
-get_line_content :: proc(hash: string, line: int) -> string {
-    data, success := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
-    if success != true do error("invalid hash")
-    
-    lines, _ := strings.split_lines(cast(string)data)
-    
-    return lines[line]
 }
 
 subcommands :: []SubCommand{
@@ -119,9 +149,10 @@ subcommands :: []SubCommand{
             
             hash := os.args[2]
             
-            update_line_by_hash(hash, "CLOSED", 1)
-            
-            info("'%s' was closed", get_line_content(hash, 0))
+            data := parse_task_by_hash(hash)
+            data.state = .CLOSED
+            modify_hash(hash, data)
+            info("%s was closed", data.title)
         }
     },
     {
@@ -132,9 +163,10 @@ subcommands :: []SubCommand{
             
             hash := os.args[2]
             
-            update_line_by_hash(hash, "OPENED", 1)
-            
-            info("'%s' was opened", get_line_content(hash, 0))
+            data := parse_task_by_hash(hash)
+            data.state = .OPENED
+            modify_hash(hash, data)
+            info("%s was opened", data.title)
         }
     },
     {
@@ -144,13 +176,11 @@ subcommands :: []SubCommand{
             if len(os.args) == 2 do error("task hash not provided")
             
             hash := os.args[2]
-            title := get_line_content(hash, 0)
+            validate_hash(hash)
             
+            data := parse_task_by_hash(hash)
             err := os.remove(fmt.tprintf("%s/%s", todo_dir, hash))
-            
-            if err != nil do error("invalid hash")
-            
-            info("'%s' was removed", title)
+            info("'%s' was removed", data.title)
         }
     },
     {
@@ -165,8 +195,10 @@ subcommands :: []SubCommand{
             
             title := os.args[3]
             
-            info("'%s' was renamed", get_line_content(hash, 0))
-            update_line_by_hash(hash, title, 0)
+            data := parse_task_by_hash(hash)
+            data.title = title
+            modify_hash(hash, data)
+            info("%s was renamed", data.title)
         }
     },
     {
@@ -181,8 +213,10 @@ subcommands :: []SubCommand{
             
             priority := os.args[3]
             
-            update_line_by_hash(hash, priority, 2)
-            info("priority of '%s' was changed", get_line_content(hash, 0))
+            data := parse_task_by_hash(hash)
+            data.priority, _ = strconv.parse_int(priority)
+            modify_hash(hash, data)
+            info("priority of %s was changed", data.title)
         }
     }
 }
