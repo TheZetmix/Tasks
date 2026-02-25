@@ -50,15 +50,12 @@ subcommands :: []SubCommand{
                 priority, _ = strconv.parse_int(os.args[3])
             }
             
-            // generate hash (legacy version with date)
-            // hour, minute, sec := time.clock_from_time(time.now())
-            // filename := fmt.tprintf(
-            //     "%s/%04d%02d%02d-%02d%02d%02d",
-            //     time.year(time.now()), time.month(time.now()), time.day(time.now()),
-            //     hour, minute, sec
-            // )
+            created := fmt.tprintf(
+                "%04d%02d%02d",
+                time.year(time.now()), time.month(time.now()), time.day(time.now()),
+            )
             
-            data := fmt.tprintf("%s\nOPENED\n%d", title, priority)
+            data := fmt.tprintf("%s\nOPENED\n%d\n%s", title, priority, created)
             
             builder := strings.builder_make(); defer strings.builder_destroy(&builder)
             for i in strings.split(title, " ") {
@@ -101,8 +98,15 @@ subcommands :: []SubCommand{
                 title := lines[0]
                 state := lines[1]
                 priority := lines[2]
+                created := lines[3]
                 
-                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%s]\t %s\n", 31 if state == "OPENED" else 32, state, i.name, priority, title)
+                year := created[0:4]
+                month := created[4:6]
+                day := created[6:8]
+                
+                created_fancy := strings.concatenate({year, ".", month, ".", day})
+                
+                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%s]\t %s (%s)\n", 31 if state == "OPENED" else 32, state, i.name, priority, title, created_fancy)
             }
             if len(files) == 0 do fmt.println("There is nothing to do :(")
         }
