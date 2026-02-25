@@ -78,6 +78,7 @@ open <hash> - reopen a closed task
 rename <hash> <new-title> - change task title
 priority <hash> <new-priority> - change task priority
 remove <hash> - permanently delete task
+update <hash> - update date of task creation
 ```
 
 Hashes are generated based on the first letters of the task name, for example:  
