@@ -63,6 +63,7 @@ modify_hash :: proc(hash: string, new_data: Task) {
     lines[3] = new_data.date
     
     new_data := strings.join(lines, "\n"); defer delete(new_data)
+    
     os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data)
 }
 
@@ -105,6 +106,7 @@ subcommands :: []SubCommand{
         proc() {
             entries, _ := os.open(todo_dir, os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
+            hashes: [dynamic]string
             
             info("%d tasks total", len(files))
             
@@ -121,22 +123,18 @@ subcommands :: []SubCommand{
                 return cast(int)priority_a < cast(int)priority_b
             })
             
-            for i in files {
-                data, _ := os.read_entire_file(i.fullpath); defer delete(data)
-                lines := strings.split_lines(cast(string)data)
+            for i in files do append(&hashes, i.name)
+            
+            for i in hashes {
+                data := parse_task_by_hash(i)
                 
-                title := lines[0]
-                state := lines[1]
-                priority := lines[2]
-                created := lines[3]
-                
-                year := created[0:4]
-                month := created[4:6]
-                day := created[6:8]
+                year := data.date[0:4]
+                month := data.date[4:6]
+                day := data.date[6:8]
                 
                 created_fancy := strings.concatenate({year, ".", month, ".", day})
                 
-                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%s]\t %s (%s)\n", 31 if state == "OPENED" else 32, state, i.name, priority, title, created_fancy)
+                fmt.printf("\033[%dm%s\033[0m task %s: \033[34mPRIORITY\033[0m[%d]\t %s (%s)\n", 31 if data.state == .OPENED else 32, data.state, i, data.priority, data.title, created_fancy)
             }
             if len(files) == 0 do fmt.println("There is nothing to do :(")
         }
@@ -243,7 +241,6 @@ main :: proc() {
         print_subcommands()
         error("unknown subcommand %s", os.args[1])
     }
-    
     
     os.make_directory("todo")
     
