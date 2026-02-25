@@ -13,23 +13,23 @@ SubCommand :: struct {
     handler: proc()
 }
 
+todo_dir :: "todo/"
+
 update_line_by_hash :: proc(hash, content: string, line: int) {
-    data, success := os.read_entire_file(fmt.tprintf("todo/%s", hash))
+    data, success := os.read_entire_file(fmt.tprintf("&s/%s", todo_dir, hash))
     if success != true do error("invalid hash")
-    error_check_and_exit()
     
     lines, _ := strings.split_lines(cast(string)data)
     
     lines[line] = content
     
     new_data := strings.join(lines, "\n"); defer delete(new_data)
-    os.write_entire_file(fmt.tprintf("todo/%s", hash), transmute([]byte)new_data)
+    os.write_entire_file(fmt.tprintf("&s/%s", todo_dir, hash), transmute([]byte)new_data)
 }
 
 get_line_content :: proc(hash: string, line: int) -> string {
-    data, success := os.read_entire_file(fmt.tprintf("todo/%s", hash))
+    data, success := os.read_entire_file(fmt.tprintf("%s/%s", todo_dir, hash))
     if success != true do error("invalid hash")
-    error_check_and_exit()
     
     lines, _ := strings.split_lines(cast(string)data)
     
@@ -42,7 +42,6 @@ subcommands :: []SubCommand{
         "create a new task",
         proc() {
             if len(os.args) == 2 do error("task title not provided")
-            error_check_and_exit()
             
             title := os.args[2]
             priority := 100
@@ -54,7 +53,7 @@ subcommands :: []SubCommand{
             // generate hash (legacy version with date)
             // hour, minute, sec := time.clock_from_time(time.now())
             // filename := fmt.tprintf(
-            //     "todo/%04d%02d%02d-%02d%02d%02d",
+            //     "%s/%04d%02d%02d-%02d%02d%02d",
             //     time.year(time.now()), time.month(time.now()), time.day(time.now()),
             //     hour, minute, sec
             // )
@@ -66,9 +65,9 @@ subcommands :: []SubCommand{
                 strings.write_byte(&builder, i[0])
             }
             
-            filename := fmt.tprintf("todo/%s", strings.to_string(builder))
+            filename := fmt.tprintf("%s/%s", todo_dir, strings.to_string(builder))
             
-            info("'%s' was added (hash: %s)", title, filename)
+            info("'%s' was added (hash: %s)", title, strings.to_string(builder))
             
             os.write_entire_file(filename, transmute([]byte)data)
         }
@@ -77,7 +76,7 @@ subcommands :: []SubCommand{
         "list",
         "list all tasks",
         proc() {
-            entries, _ := os.open("./todo", os.O_RDONLY); defer os.close(entries)
+            entries, _ := os.open(todo_dir, os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
             
             info("%d tasks total", len(files))
@@ -113,7 +112,6 @@ subcommands :: []SubCommand{
         "close task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
-            error_check_and_exit()
             
             hash := os.args[2]
             
@@ -127,7 +125,6 @@ subcommands :: []SubCommand{
         "open task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
-            error_check_and_exit()
             
             hash := os.args[2]
             
@@ -141,15 +138,15 @@ subcommands :: []SubCommand{
         "delete task permanently",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
-            error_check_and_exit()
             
             hash := os.args[2]
+            title := get_line_content(hash, 0)
             
-            err := os.remove(fmt.tprintf("todo/%s", hash))
+            err := os.remove(fmt.tprintf("%s/%s", todo_dir, hash))
             
-            if err == nil do error("invalid hash")
-            error_check_and_exit()
-            info("'%s' was removed", get_line_content(hash, 0))
+            if err != nil do error("invalid hash")
+            
+            info("'%s' was removed", title)
         }
     },
     {
@@ -157,12 +154,10 @@ subcommands :: []SubCommand{
         "rename task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
-            error_check_and_exit()
             
             hash := os.args[2]
             
             if len(os.args) == 3 do error("new task title not provided")
-            error_check_and_exit()
             
             title := os.args[3]
             
@@ -175,12 +170,10 @@ subcommands :: []SubCommand{
         "change priority of the task",
         proc() {
             if len(os.args) == 2 do error("task hash not provided")
-            error_check_and_exit()
             
             hash := os.args[2]
             
             if len(os.args) == 3 do error("new priority not provided")
-            error_check_and_exit()
             
             priority := os.args[3]
             
@@ -204,16 +197,15 @@ str_is_subcommand :: proc(str: string) -> bool {
 
 main :: proc() {
     if len(os.args) == 1 {
-        error("first argument must be a subcommand")
         print_subcommands()
+        error("first argument must be a subcommand")
     }
     
     if len(os.args) == 2 && !str_is_subcommand(os.args[1]) {
-        error("unknown subcommand %s", os.args[1])
         print_subcommands()
+        error("unknown subcommand %s", os.args[1])
     }
     
-    error_check_and_exit()
     
     os.make_directory("todo")
     
