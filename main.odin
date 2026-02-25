@@ -219,7 +219,7 @@ subcommands :: []SubCommand{
     },
     {
         "update",
-        "update date of the task",
+        "update date of task creation",
         proc() {
                 if len(os.args) == 2 do error("task hash not provided")
             
