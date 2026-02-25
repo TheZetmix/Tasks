@@ -3,10 +3,11 @@ package tasks
 import "core:fmt"
 import "core:os"
 
-error :: proc(format: string, args: ..any) {
+error :: proc(format: string, args: ..any, loc := #caller_location) {
     fmt.printf("tasks: \033[31m[ERROR]\033[0m: ")
     fmt.fprintf(os.stderr, format, ..args)
     fmt.printf("\n")
+    // fmt.println(loc)
     os.exit(1)
 }
 
