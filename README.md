@@ -24,19 +24,19 @@ To view all existing tasks, use the list subcommand (tasks are sorted by priorit
 ```console
 $ tasks list
 tasks: [INFO]: 2 tasks total
-OPENED task At: PRIORITY[60] Another task
-OPENED task St: PRIORITY[100] Some task
+OPENED task At: PRIORITY[60] Another task (2026.01.01)
+OPENED task St: PRIORITY[100] Some task (2026.01.01)
 ```
 To close a task, use the close subcommand  
 It requires a task hash, you can view it through the tasks list  
 ```console
 $ tasks list
 tasks: [INFO]: 1 tasks total
-OPENED task At: PRIORITY[60] Another task
+OPENED task At: PRIORITY[60] Another task (2026.01.01)
 $ tasks close At
 $ tasks list
 tasks: [INFO]: 1 tasks total
-CLOSED task At: PRIORITY[60] Another task
+CLOSED task At: PRIORITY[60] Another task (2026.01.01)
 ```
 To reopen a closed task, use the open subcommand:  
 ```console
@@ -54,7 +54,7 @@ To remove a task, use the remove subcommand
 ```console
 $ tasks list
 tasks: [INFO]: 1 tasks total
-CLOSED task At: PRIORITY[60] Another task
+CLOSED task At: PRIORITY[60] Another task (2026.01.01)
 $ tasks remove At
 $ tasks list
 tasks: [INFO]: 0 tasks total
@@ -67,6 +67,7 @@ Each task is stored as a file in the todo/ directory with the following format:
 Task title
 STATE (OPENED/CLOSED)
 Priority number
+Date of creation
 ```
 Subcommands summary:  
 ```text
