@@ -259,7 +259,7 @@ main :: proc() {
         error("unknown subcommand %s", os.args[1])
     }
     
-    os.make_directory("todo")
+    os.make_directory(todo_dir)
     
     // if the provided sumcommand is in the list, call its handler
     for i in subcommands {
