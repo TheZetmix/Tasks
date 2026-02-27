@@ -3,6 +3,8 @@
 ### NOTE: The original idea was taken from [Tsoding](https://github.com/tsoding) from his series of videos about 3d software rendering game (https://www.youtube.com/@TsodingDaily) and also improved for full CLI support
 
 This utility allows you to create, delete or close tasks for projects directly in the project folder  
+You can use this to create, for example, future plans for a project, or simply tasks that you  
+don’t want to do now, but want to do in the future  
 
 ### Quick start:
 Since the utility is written in the Odin programming language, you need to [download](https://odin-lang.org/docs/install/) a compiler for this language   
