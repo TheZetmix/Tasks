@@ -16,7 +16,5 @@ main :: proc() {
     os.make_directory(todo_dir)
     
     // if the provided sumcommand is in the list, call its handler
-    for i in subcommands {
-        if i.name == os.args[1] do i.handler()
-    }
+    execute_subcommand_by_name(os.args[1])
 }

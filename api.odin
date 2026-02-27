@@ -10,7 +10,7 @@ import "core:slice"
 SubCommand :: struct {
     name: string,
     help: string,
-    handler: proc()
+    handler: proc(args: []string)
 }
 
 Task :: struct {
@@ -71,14 +71,14 @@ subcommands :: []SubCommand{
     {
         "new",
         "create a new task",
-        proc() {
-            if len(os.args) == 2 do error("task title not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task title not provided")
             
-            title := os.args[2]
+            title := args[2]
             priority := 100
             
-            if len(os.args) == 4 {
-                priority, _ = strconv.parse_int(os.args[3])
+            if len(args) == 4 {
+                priority, _ = strconv.parse_int(args[3])
             }
             
             created := fmt.tprintf(
@@ -103,7 +103,7 @@ subcommands :: []SubCommand{
     {
         "list",
         "list all tasks",
-        proc() {
+        proc(args: []string) {
             entries, _ := os.open(todo_dir, os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
             hashes: [dynamic]string; defer delete(hashes)
@@ -142,10 +142,10 @@ subcommands :: []SubCommand{
     {
         "close",
         "close task",
-        proc() {
-            if len(os.args) == 2 do error("task hash not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task hash not provided")
             
-            hash := os.args[2]
+            hash := args[2]
             
             data := parse_task_by_hash(hash)
             data.state = .CLOSED
@@ -156,10 +156,10 @@ subcommands :: []SubCommand{
     {
         "open",
         "open task",
-        proc() {
-            if len(os.args) == 2 do error("task hash not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task hash not provided")
             
-            hash := os.args[2]
+            hash := args[2]
             
             data := parse_task_by_hash(hash)
             data.state = .OPENED
@@ -170,10 +170,10 @@ subcommands :: []SubCommand{
     {
         "remove",
         "delete task permanently",
-        proc() {
-            if len(os.args) == 2 do error("task hash not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task hash not provided")
             
-            hash := os.args[2]
+            hash := args[2]
             validate_hash(hash)
             
             data := parse_task_by_hash(hash)
@@ -184,14 +184,14 @@ subcommands :: []SubCommand{
     {
         "rename",
         "rename task",
-        proc() {
-            if len(os.args) == 2 do error("task hash not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task hash not provided")
             
-            hash := os.args[2]
+            hash := args[2]
             
-            if len(os.args) == 3 do error("new task title not provided")
+            if len(args) == 3 do error("new task title not provided")
             
-            title := os.args[3]
+            title := args[3]
             
             data := parse_task_by_hash(hash)
             data.title = title
@@ -202,14 +202,14 @@ subcommands :: []SubCommand{
     {
         "priority",
         "change priority of the task",
-        proc() {
-            if len(os.args) == 2 do error("task hash not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task hash not provided")
             
-            hash := os.args[2]
+            hash := args[2]
             
-            if len(os.args) == 3 do error("new priority not provided")
+            if len(args) == 3 do error("new priority not provided")
             
-            priority := os.args[3]
+            priority := args[3]
             
             data := parse_task_by_hash(hash)
             data.priority, _ = strconv.parse_int(priority)
@@ -220,10 +220,10 @@ subcommands :: []SubCommand{
     {
         "update",
         "update date of task creation",
-        proc() {
-            if len(os.args) == 2 do error("task hash not provided")
+        proc(args: []string) {
+            if len(args) == 2 do error("task hash not provided")
             
-            hash := os.args[2]
+            hash := args[2]
             
             data := parse_task_by_hash(hash)
             data.date = fmt.tprintf(
@@ -246,4 +246,8 @@ print_subcommands :: proc() {
 str_is_subcommand :: proc(str: string) -> bool {
     for i in subcommands do if i.name == str do return true
     return false
+}
+
+execute_subcommand_by_name :: proc(name: string, args := os.args) {
+    for i in subcommands do if i.name == name do i.handler(args)
 }
