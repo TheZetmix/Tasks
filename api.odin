@@ -67,7 +67,7 @@ modify_hash :: proc(hash: string, new_data: Task) {
     os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data_str)
 }
 
-subcommands :: []SubCommand{
+cli_subcommands :: []SubCommand{
     {
         "new",
         "create a new task",
@@ -237,17 +237,17 @@ subcommands :: []SubCommand{
 }
 
 print_subcommands :: proc() {
-    fmt.println("available subcommands:")
-    for i in subcommands {
+    fmt.println("available cli_subcommands:")
+    for i in cli_subcommands {
         fmt.println("  -", i.name, "\t", i.help)
     }
 }
 
 str_is_subcommand :: proc(str: string) -> bool {
-    for i in subcommands do if i.name == str do return true
+    for i in cli_subcommands do if i.name == str do return true
     return false
 }
 
 execute_subcommand_by_name :: proc(name: string, args := os.args) {
-    for i in subcommands do if i.name == name do i.handler(args)
+    for i in cli_subcommands do if i.name == name do i.handler(args)
 }
