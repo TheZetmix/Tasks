@@ -236,18 +236,18 @@ cli_subcommands :: []SubCommand{
     }
 }
 
-print_subcommands :: proc() {
+print_subcommands :: proc(subcommands: []SubCommand) {
     fmt.println("available cli_subcommands:")
-    for i in cli_subcommands {
+    for i in subcommands {
         fmt.println("  -", i.name, "\t", i.help)
     }
 }
 
-str_is_subcommand :: proc(str: string) -> bool {
-    for i in cli_subcommands do if i.name == str do return true
+str_is_subcommand :: proc(str: string, subcommands: []SubCommand) -> bool {
+    for i in subcommands do if i.name == str do return true
     return false
 }
 
-execute_subcommand_by_name :: proc(name: string, args := os.args) {
-    for i in cli_subcommands do if i.name == name do i.handler(args)
+execute_subcommand_by_name :: proc(name: string, subcommands: []SubCommand, args := os.args) {
+    for i in subcommands do if i.name == name do i.handler(args)
 }
