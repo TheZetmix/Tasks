@@ -1,4 +1,4 @@
-package tasks
+package errors
 
 import "core:fmt"
 import "core:os"

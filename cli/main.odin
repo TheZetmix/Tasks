@@ -7,12 +7,15 @@ import "core:slice"
 import "core:fmt"
 import "core:strconv"
 
-cli_subcommands :: []SubCommand{
+import "../api"
+import "../errors"
+
+cli_subcommands :: []api.SubCommand{
     {
         "new",
         "create a new task",
         proc(args: []string) {
-            if len(args) == 2 do error("task title not provided")
+            if len(args) == 2 do errors.error("task title not provided")
             
             title := args[2]
             priority := 100
@@ -33,9 +36,9 @@ cli_subcommands :: []SubCommand{
                 strings.write_byte(&builder, i[0])
             }
             
-            filename := fmt.tprintf("%s/%s", todo_dir, strings.to_string(builder))
+            filename := fmt.tprintf("%s/%s", api.todo_dir, strings.to_string(builder))
             
-            info("'%s' was added (hash: %s)", title, strings.to_string(builder))
+            errors.info("'%s' was added (hash: %s)", title, strings.to_string(builder))
             
             os.write_entire_file(filename, transmute([]byte)data)
         }
@@ -44,11 +47,11 @@ cli_subcommands :: []SubCommand{
         "list",
         "list all tasks",
         proc(args: []string) {
-            entries, _ := os.open(todo_dir, os.O_RDONLY); defer os.close(entries)
+            entries, _ := os.open(api.todo_dir, os.O_RDONLY); defer os.close(entries)
             files, _ := os.read_dir(entries, -1)
             hashes: [dynamic]string; defer delete(hashes)
             
-            info("%d tasks total", len(files))
+            errors.info("%d tasks total", len(files))
             
             slice.sort_by(files[:], proc(a, b: os.File_Info) -> bool {
                 data_a, _ := os.read_entire_file(a.fullpath); defer delete(data_a)
@@ -66,7 +69,7 @@ cli_subcommands :: []SubCommand{
             for i in files do append(&hashes, i.name)
             
             for i in hashes {
-                data := parse_task_by_hash(i)
+                data := api.parse_task_by_hash(i)
                 
                 year := data.date[0:4]
                 month := data.date[4:6]
@@ -83,112 +86,112 @@ cli_subcommands :: []SubCommand{
         "close",
         "close task",
         proc(args: []string) {
-            if len(args) == 2 do error("task hash not provided")
+            if len(args) == 2 do errors.error("task hash not provided")
             
             hash := args[2]
             
-            data := parse_task_by_hash(hash)
+            data := api.parse_task_by_hash(hash)
             data.state = .CLOSED
-            modify_hash(hash, data)
-            info("%s was closed", data.title)
+            api.modify_hash(hash, data)
+            errors.info("%s was closed", data.title)
         }
     },
     {
         "open",
         "open task",
         proc(args: []string) {
-            if len(args) == 2 do error("task hash not provided")
+            if len(args) == 2 do errors.error("task hash not provided")
             
             hash := args[2]
             
-            data := parse_task_by_hash(hash)
+            data := api.parse_task_by_hash(hash)
             data.state = .OPENED
-            modify_hash(hash, data)
-            info("%s was opened", data.title)
+            api.modify_hash(hash, data)
+            errors.info("%s was opened", data.title)
         }
     },
     {
         "remove",
         "delete task permanently",
         proc(args: []string) {
-            if len(args) == 2 do error("task hash not provided")
+            if len(args) == 2 do errors.error("task hash not provided")
             
             hash := args[2]
-            validate_hash(hash)
+            api.validate_hash(hash)
             
-            data := parse_task_by_hash(hash)
-            err := os.remove(fmt.tprintf("%s/%s", todo_dir, hash))
-            info("'%s' was removed", data.title)
+            data := api.parse_task_by_hash(hash)
+            err := os.remove(fmt.tprintf("%s/%s", api.todo_dir, hash))
+            errors.info("'%s' was removed", data.title)
         }
     },
     {
         "rename",
         "rename task",
         proc(args: []string) {
-            if len(args) == 2 do error("task hash not provided")
+            if len(args) == 2 do errors.error("task hash not provided")
             
             hash := args[2]
             
-            if len(args) == 3 do error("new task title not provided")
+            if len(args) == 3 do errors.error("new task title not provided")
             
             title := args[3]
             
-            data := parse_task_by_hash(hash)
+            data := api.parse_task_by_hash(hash)
             data.title = title
-            modify_hash(hash, data)
-            info("%s was renamed", data.title)
+            api.modify_hash(hash, data)
+            errors.info("%s was renamed", data.title)
         }
     },
     {
         "priority",
         "change priority of the task",
         proc(args: []string) {
-            if len(args) == 2 do error("task hash not provided")
+            if len(args) == 2 do errors.error("task hash not provided")
             
             hash := args[2]
             
-            if len(args) == 3 do error("new priority not provided")
+            if len(args) == 3 do errors.error("new priority not provided")
             
             priority := args[3]
             
-            data := parse_task_by_hash(hash)
+            data := api.parse_task_by_hash(hash)
             data.priority, _ = strconv.parse_int(priority)
-            modify_hash(hash, data)
-            info("priority of %s was changed", data.title)
+            api.modify_hash(hash, data)
+            errors.info("priority of %s was changed", data.title)
         }
     },
     {
         "update",
         "update date of task creation",
         proc(args: []string) {
-            if len(args) == 2 do error("task hash not provided")
+            if len(args) == 2 do errors.error("task hash not provided")
             
             hash := args[2]
             
-            data := parse_task_by_hash(hash)
+            data := api.parse_task_by_hash(hash)
             data.date = fmt.tprintf(
                 "%04d%02d%02d",
                 time.year(time.now()), time.month(time.now()), time.day(time.now()),
             )
-            modify_hash(hash, data)
-            info("date of %s was updated", data.title)
+            api.modify_hash(hash, data)
+            errors.info("date of %s was updated", data.title)
         }
     }
 }
 
 main :: proc() {
     if len(os.args) == 1 {
-        print_subcommands(cli_subcommands)
-        error("first argument must be a subcommand")
+        api.print_subcommands(cli_subcommands)
+        errors.error("first argument must be a subcommand")
     }
     
-    if len(os.args) == 2 && !str_is_subcommand(os.args[1], cli_subcommands) {
-        print_subcommands(cli_subcommands)
-        error("unknown subcommand %s", os.args[1])
+    if len(os.args) == 2 && !api.str_is_subcommand(os.args[1], cli_subcommands) {
+        api.print_subcommands(cli_subcommands)
+        errors.error("unknown subcommand %s", os.args[1])
     }
     
-    os.make_directory(todo_dir)
+    os.make_directory(api.todo_dir)
     
     // if the provided sumcommand is in the list, call its handler
-    execute_subcommand_by_name(os.args[1], cli_subcommands)
+    api.execute_subcommand_by_name(os.args[1], cli_subcommands)
 }

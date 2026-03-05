@@ -1,9 +1,11 @@
-package tasks
+package api
 
 import "core:fmt"
 import "core:os"
 import "core:strconv"
 import "core:strings"
+
+import "../errors"
 
 SubCommand :: struct {
     name: string,
@@ -26,11 +28,11 @@ TaskState :: enum {
 todo_dir :: "todo/"
 
 validate_hash :: proc(hash: string) {
-    if !os.exists(fmt.tprintf("%s/%s", todo_dir, hash)) do error("invalid hash %s", hash)
+    if !os.exists(fmt.tprintf("%s/%s", todo_dir, hash)) do errors.error("invalid hash %s", hash)
 }
 
 validate_format :: proc(lines: []string) {
-    if len(lines) != 4 do error("invalid task file format")
+    if len(lines) != 4 do errors.error("invalid task file format")
 }
 
 parse_task_by_hash :: proc(hash: string) -> (res: Task) {
@@ -65,8 +67,19 @@ modify_hash :: proc(hash: string, new_data: Task) {
     os.write_entire_file(fmt.tprintf("%s/%s", todo_dir, hash), transmute([]byte)new_data_str)
 }
 
+parse_all_tasks :: proc() -> (res: [dynamic]Task) {
+    entries, _ := os.open(todo_dir, os.O_RDONLY); defer os.close(entries)
+    files, _ := os.read_dir(entries, -1)
+    
+    for i in files {
+        append(&res, parse_task_by_hash(i.name))
+    }
+    
+    return res
+}
+
 print_subcommands :: proc(subcommands: []SubCommand) {
-    fmt.println("available cli_subcommands:")
+    fmt.println("available cli subcommands:")
     for i in subcommands {
         fmt.println("  -", i.name, "\t", i.help)
     }

@@ -1,6 +1,6 @@
 
 build:
-	odin build . -out:tasks
+	odin build cli -out:tasks
 
 install:
 	sudo cp tasks /usr/local/bin
